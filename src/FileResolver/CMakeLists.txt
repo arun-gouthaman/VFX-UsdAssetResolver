@@ -19,13 +19,15 @@ add_library(${AR_FILERESOLVER_TARGET_LIB}
 set_boost_namespace(${AR_FILERESOLVER_TARGET_LIB})
 # Libs
 target_link_libraries(${AR_FILERESOLVER_TARGET_LIB}
-    ${AR_PXR_LIB_PREFIX}arch
-    ${AR_PXR_LIB_PREFIX}tf
-    ${AR_PXR_LIB_PREFIX}gf
-    ${AR_PXR_LIB_PREFIX}vt
-    ${AR_PXR_LIB_PREFIX}ar
-    ${AR_PXR_LIB_PREFIX}sdf
-    ${AR_BOOST_PYTHON_LIB}
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}arch.lib
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}tf.lib
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}gf.lib
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}vt.lib
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}ar.lib
+    ${AR_PXR_LIB_DIR}/${AR_PXR_LIB_PREFIX}sdf.lib
+    ${AR_PXR_LIB_DIR}/tbb.lib
+    ${AR_BOOST_PYTHON_LIB}.lib
+    ${AR_PYTHON_LIB}.lib
 )
 # Headers
 target_include_directories(${AR_FILERESOLVER_TARGET_LIB}
@@ -66,7 +68,9 @@ set_boost_namespace(${AR_FILERESOLVER_TARGET_PYTHON})
 # Libs
 target_link_libraries(${AR_FILERESOLVER_TARGET_PYTHON}
     ${AR_FILERESOLVER_TARGET_LIB}
-    ${AR_BOOST_PYTHON_LIB}
+    ${AR_BOOST_PYTHON_LIB}.lib
+    ${AR_PYTHON_LIB}.lib
+    ${AR_PXR_LIB_DIR}/tbb.lib
 )
 # Headers
 target_include_directories(${AR_FILERESOLVER_TARGET_PYTHON}

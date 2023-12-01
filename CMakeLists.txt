@@ -1,3 +1,5 @@
+include(CMakePrintHelpers)
+
 ### Configuration ###
 set(AR_PROJECT_NAME UsdAssetResolver)
 set(AR_RESOLVER_USD_PYTHON_MODULE_NAME usdAssetResolver)
@@ -64,64 +66,110 @@ set(AR_HTTPRESOLVER_USD_CXX_CLASS_NAME ArHttp)
 set(AR_HTTPRESOLVER_TARGET_LIB httpResolver)
 set(AR_HTTPRESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_HTTPRESOLVER_USD_PLUGIN_NAME})
 
+
+
+
 # Arch
 if (WIN32)
     set(AR_ARCH_LIB_SUFFIX "dll")
 else()
     set(AR_ARCH_LIB_SUFFIX "so")
 endif()
-# Houdini
-set(AR_HOUDINI_ROOT $ENV{HFS} CACHE PATH "Houdini install directory")
-if (WIN32)
-    set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-else()
-    set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
-endif()
-set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
-# Usd
-if (WIN32)
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-    set(AR_PXR_LIB_PREFIX "libpxr_")
-else()
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
-    set(AR_PXR_LIB_PREFIX "pxr_")
-endif()
-set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
-# Python
-if (WIN32)
-    if(EXISTS "${AR_HOUDINI_ROOT}/python310")
-        set(AR_PYTHON_LIB python3.10)
-        set(AR_PYTHON_LIB_NUMBER python310)
+
+
+
+if("$ENV{BUILD_FOR}" STREQUAL "houdini")
+    # Houdini
+    set(AR_HOUDINI_ROOT $ENV{HFS} CACHE PATH "Houdini install directory")
+    if (WIN32)
+        set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
     else()
-        set(AR_PYTHON_LIB python3.9)
-        set(AR_PYTHON_LIB_NUMBER python39)
+        set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
     endif()
-else()
-    if(EXISTS "${AR_HOUDINI_ROOT}/python/bin/python3.10")
-        set(AR_PYTHON_LIB python3.10)
-        set(AR_PYTHON_LIB_NUMBER python310)
+    set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
+    # Usd
+    if (WIN32)
+        set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
+        set(AR_PXR_LIB_PREFIX "libpxr_")
     else()
-        set(AR_PYTHON_LIB python3.9)
-        set(AR_PYTHON_LIB_NUMBER python39)
+        set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
+        set(AR_PXR_LIB_PREFIX "pxr_")
+    endif()
+    set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
+    # Python
+    if (WIN32)
+        if(EXISTS "${AR_HOUDINI_ROOT}/python310")
+            set(AR_PYTHON_LIB python3.10)
+            set(AR_PYTHON_LIB_NUMBER python310)
+        else()
+            set(AR_PYTHON_LIB python3.9)
+            set(AR_PYTHON_LIB_NUMBER python39)
+        endif()
+    else()
+        if(EXISTS "${AR_HOUDINI_ROOT}/python/bin/python3.10")
+            set(AR_PYTHON_LIB python3.10)
+            set(AR_PYTHON_LIB_NUMBER python310)
+        else()
+            set(AR_PYTHON_LIB python3.9)
+            set(AR_PYTHON_LIB_NUMBER python39)
+        endif()
+    endif()
+
+    if (WIN32)
+        set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
+        set(AR_PYTHON_LIB_SITEPACKAGES ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
+    else()
+        set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/python/lib)
+        set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
+    endif()
+    set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
+    # Boost
+    set(AR_BOOST_NAMESPACE hboost)
+    if (WIN32)
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-mt-x64)
+    else()
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
+    endif()
+    set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
+
+elseif("$ENV{BUILD_FOR}" STREQUAL "usd")
+    set(AR_USD_ROOT $ENV{USD_LOCATION})
+
+    cmake_print_variables(AR_USD_ROOT)
+
+    set(AR_PXR_LIB_DIR ${AR_USD_ROOT}/lib)
+    set(AR_PXR_INCLUDE_DIR ${AR_USD_ROOT}/include)
+
+    cmake_print_variables(AR_PXR_LIB_DIR)
+    cmake_print_variables(AR_PXR_INCLUDE_DIR)
+
+    if (WIN32)
+        set(AR_PXR_LIB_PREFIX "usd_")
+    else()
+        set(AR_PXR_LIB_PREFIX "pxr_")
+    endif()
+
+    # Python
+    set(AR_PYTHON_VERSION $ENV{PYTHON_VERSION})
+    set(AR_PYTHON_DIR $ENV{PYTHON_LOCATION})
+    set(AR_PYTHON_INCLUDE_DIR ${AR_PYTHON_DIR}/include)
+    set(AR_PYTHON_LIB_DIR ${AR_PYTHON_DIR}/libs)
+    cmake_print_variables(AR_PYTHON_INCLUDE_DIR)
+    cmake_print_variables(AR_PYTHON_LIB_DIR)
+
+    #Boost
+    set(AR_BOOST_INCLUDE_DIR "$ENV{BOOST_INCLUDE_DIR}")    
+    set(AR_BOOST_LIB_DIR "$ENV{BOOST_LIB_DIR}")
+    set(AR_BOOST_NAMESPACE boost)
+    set(AR_PYTHON_LIB_NUMBER python37)
+    if (WIN32)
+        set(AR_BOOST_PYTHON_LIB ${AR_PXR_LIB_DIR}/${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-vc142-mt-x64-1_70)
+        set(AR_PYTHON_LIB ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB_NUMBER})
+    else()
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
     endif()
 endif()
 
-if (WIN32)
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
-    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
-else()
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/python/lib)
-    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
-endif()
-set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
-# Boost
-set(AR_BOOST_NAMESPACE hboost)
-if (WIN32)
-    set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-mt-x64)
-else()
-    set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
-endif()
-set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
 
 ### Init ###
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -152,13 +200,22 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/defaults)
 # Boost Namespace Wrapper
 include(setBoostNamespace)
-include_directories(${CMAKE_SOURCE_DIR}/src/utils)
-# Houdini
-link_directories(${AR_HOUDINI_LIB_DIR})
-# Usd (Already provided via Houdini)
-link_directories(${AR_PXR_LIB_DIR})
-# Python
-link_directories(${AR_PYTHON_LIB_DIR})
+if("$ENV{BUILD_FOR}" STREQUAL "houdini")
+    include_directories(${CMAKE_SOURCE_DIR}/src/utils)
+    # Houdini
+    link_directories(${AR_HOUDINI_LIB_DIR})
+    # Usd (Already provided via Houdini)
+    link_directories(${AR_PXR_LIB_DIR})
+    # Python
+    link_directories(${AR_PYTHON_LIB_DIR})
+
+elseif("$ENV{BUILD_FOR}" STREQUAL "usd")
+    include_directories(${CMAKE_SOURCE_DIR}/src/utils)
+    # Usd
+    link_directories(${USD_INCLUDE_DIR})
+    # Python
+    link_directories(${PYTHON_LIB_DIR})
+endif()
 
 ### Targets ###
 ## Maintained in this repo
