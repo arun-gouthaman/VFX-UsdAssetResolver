@@ -8,9 +8,12 @@
 #include "pxr/base/tf/getenv.h"
 #include "pxr/base/tf/pathUtils.h"
 #include <pxr/usd/sdf/layer.h>
+#include <pxr/base/js/json.h>
 
 #include <iostream>
 #include <vector>
+
+#include <fstream>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -49,6 +52,7 @@ FileResolverContext::FileResolverContext(const FileResolverContext& ctx) = defau
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 1\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
@@ -59,8 +63,10 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 2\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext() - Creating new context with custom search paths\n");
     // Init
+    this->_GetMappingPairsFromJsonFile(searchPaths[0]);
     this->_LoadEnvMappingRegex();
     this->SetCustomSearchPaths(searchPaths);
     this->RefreshSearchPaths();
@@ -68,6 +74,7 @@ FileResolverContext::FileResolverContext(const std::vector<std::string>& searchP
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 3\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context with custom search paths\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
@@ -75,6 +82,8 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
     this->RefreshSearchPaths();
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+    this->_GetMappingPairsFromJsonFile(this->GetMappingFilePath());
+    this->GetMappingPair();
 }
 
 bool
@@ -135,6 +144,7 @@ FileResolverContext::_LoadEnvSearchPaths()
 
 bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePath)
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Checking for USD mapping pairs\n", filePath.c_str());
     data->mappingPairs.clear();
     std::vector<std::string> usdFilePathExts{ ".usd", ".usdc", ".usda" };
     if (!getStringEndswithStrings(filePath, usdFilePathExts))
@@ -160,12 +170,63 @@ bool FileResolverContext::_GetMappingPairsFromUsdFile(const std::string& filePat
     return true;
 }
 
+bool FileResolverContext::_GetMappingPairsFromJsonFile(const std::string& filePath)
+{
+    std::string assetDir = TfGetPathName(TfAbsPath(filePath));
+    std::string replaceJsonFilePath = TfNormPath(
+        TfStringCatPaths(assetDir, "replace_json.json"));
+    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", filePath.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", assetDir.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", replaceJsonFilePath.c_str());
+
+    std::ifstream ifs(replaceJsonFilePath);
+
+
+    if (ifs)
+    {
+        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile JSON FILE FOUND\n");
+        JsParseError error;
+        const JsValue value = JsParseStream(ifs, &error);
+        ifs.close();
+
+        if (!value.IsNull() && value.IsArray()) {
+            if (value.GetJsArray().size() > 0) {
+                data->mappingPairs.clear();
+                for (const auto& pair : value.GetJsArray()) {
+                    if (pair.IsArray()) {
+                        this->AddMappingPair(
+                            pair.GetJsArray()[0].GetString(), pair.GetJsArray()[1].GetString());
+                        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("%s\n", pair.GetJsArray()[0].GetString().c_str());
+                        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("%s\n", pair.GetJsArray()[1].GetString().c_str());
+                    }
+                }
+            }
+        }
+        else {
+            fprintf(stderr, "Error: parse error at %s:%d:%d: %s\n",
+                replaceJsonFilePath.c_str(), error.line, error.column, error.reason.c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std::string& targetStr){
     auto map_find = data->mappingPairs.find(sourceStr);
     if(map_find != data->mappingPairs.end()){
         map_find->second = targetStr;
     }else{
         data->mappingPairs.insert(std::pair<std::string, std::string>(sourceStr,targetStr));
+    }
+}
+
+void FileResolverContext::GetMappingPair()
+{
+    for (std::pair<std::string, std::string> _pair : data->mappingPairs)
+    {
+        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("\nResolverContext::_GetMappingPairsFromData ('%s')\n", _pair.first.c_str());
+        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromData ('%s')\n\n", _pair.second.c_str());
     }
 }
 

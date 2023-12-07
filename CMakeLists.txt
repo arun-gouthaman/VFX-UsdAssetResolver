@@ -72,8 +72,10 @@ set(AR_HTTPRESOLVER_INSTALL_PREFIX ${AR_PROJECT_NAME}/${AR_HTTPRESOLVER_USD_PLUG
 # Arch
 if (WIN32)
     set(AR_ARCH_LIB_SUFFIX "dll")
+    set(AR_LIB_EXT "lib")
 else()
     set(AR_ARCH_LIB_SUFFIX "so")
+    set(AR_LIB_EXT "a")
 endif()
 
 
@@ -158,15 +160,15 @@ elseif("$ENV{BUILD_FOR}" STREQUAL "usd")
     cmake_print_variables(AR_PYTHON_LIB_DIR)
 
     #Boost
-    set(AR_BOOST_INCLUDE_DIR "$ENV{BOOST_INCLUDE_DIR}")    
-    set(AR_BOOST_LIB_DIR "$ENV{BOOST_LIB_DIR}")
+    set(AR_BOOST_INCLUDE_DIR $ENV{BOOST_INCLUDE_DIR})    
+    set(AR_BOOST_LIB_DIR $ENV{BOOST_LIB_DIR})
     set(AR_BOOST_NAMESPACE boost)
     set(AR_PYTHON_LIB_NUMBER python37)
     if (WIN32)
         set(AR_BOOST_PYTHON_LIB ${AR_PXR_LIB_DIR}/${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-vc142-mt-x64-1_70)
         set(AR_PYTHON_LIB ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB_NUMBER})
     else()
-        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}m)
     endif()
 endif()
 

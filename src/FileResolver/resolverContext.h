@@ -79,6 +79,8 @@ public:
     AR_FILERESOLVER_API
     void AddMappingPair(const std::string& sourceStr, const std::string& targetStr);
     AR_FILERESOLVER_API
+    void GetMappingPair();
+    AR_FILERESOLVER_API
     void RemoveMappingByKey(const std::string& sourceStr);
     AR_FILERESOLVER_API
     void RemoveMappingByValue(const std::string& targetStr);
@@ -108,6 +110,7 @@ private:
     void _LoadEnvMappingRegex();
     void _LoadEnvSearchPaths();
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
+    bool _GetMappingPairsFromJsonFile(const std::string& filePath);
 
 };
 
