@@ -79,7 +79,7 @@ public:
     AR_FILERESOLVER_API
     void AddMappingPair(const std::string& sourceStr, const std::string& targetStr);
     AR_FILERESOLVER_API
-    void GetMappingPair();
+    void GetMappingPairTEST();
     AR_FILERESOLVER_API
     void RemoveMappingByKey(const std::string& sourceStr);
     AR_FILERESOLVER_API
@@ -111,7 +111,6 @@ private:
     void _LoadEnvSearchPaths();
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
     bool _GetMappingPairsFromJsonFile(const std::string& filePath);
-
 };
 
 PXR_NAMESPACE_OPEN_SCOPE

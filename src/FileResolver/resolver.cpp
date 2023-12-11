@@ -124,14 +124,18 @@ ArResolvedPath
 FileResolver::_Resolve(
     const std::string& assetPath) const
 {
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("!!!!! _RESOLVE !!!!! ('%s')\n", assetPath.c_str());
     if (assetPath.empty()) {
         return ArResolvedPath();
     }
     if (_IsRelativePath(assetPath)) {
+        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("RELATIVE PATH\n");
         if (this->_IsContextDependentPath(assetPath)) {
+            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("CONTEXT DEPENDENT\n");
             const FileResolverContext* contexts[2] = {this->_GetCurrentContextPtr(), &_fallbackContext};
             for (const FileResolverContext* ctx : contexts) {
                 if (ctx) {
+                    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("!!!!! CONTEXT FOUND !!!!!\n");
                     auto &mappingPairs = ctx->GetMappingPairs();
                     std::string mappedPath = assetPath;
                     if (!mappingPairs.empty()){
@@ -161,9 +165,38 @@ FileResolver::_Resolve(
                     // Only try the first valid context.
                     break;
                 }
+                else
+                {
+                    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("!!!!! CONTEXT NOT FOUND !!!!!\n");
+                }
             }
         }
         return ArResolvedPath();
+    }
+    else
+    {
+        const FileResolverContext* contexts[2] = { this->_GetCurrentContextPtr(), &_fallbackContext };
+        for (const FileResolverContext* ctx : contexts)
+        {
+            TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ELSE PATH\n");
+            if (ctx) 
+            {
+                TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("CTX FOUND\n");
+                std::map<std::string, std::string> map_pair = ctx->GetMappingPairs();
+                if (!map_pair.empty())
+                {
+                    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("PAIR FOUND\n");
+                    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("CHECK KEY ('%s')\n", assetPath.c_str());
+                    std::map<std::string, std::string>::iterator map_find = map_pair.find(assetPath);
+                    if (map_find != map_pair.end())
+                    {
+                        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("KEY FOUND\n");
+                        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("PAIR ('%s') -> ('%s')\n", assetPath.c_str(), map_find->second);
+                        return _ResolveAnchored(std::string(), map_find->second);
+                    }
+                }
+            }
+        }
     }
     return _ResolveAnchored(std::string(), assetPath);
 }
@@ -264,8 +297,9 @@ std::shared_ptr<ArAsset>
 FileResolver::_OpenAsset(
     const ArResolvedPath& resolvedPath) const
 {
+
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
-        "Resolver::OpenAsset('%s')\n",
+        "Resolver::_OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());
     return ArFilesystemAsset::Open(resolvedPath);
 }

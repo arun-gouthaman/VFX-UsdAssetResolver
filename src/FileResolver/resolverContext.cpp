@@ -82,8 +82,12 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
     this->RefreshSearchPaths();
     this->SetMappingFilePath(TfAbsPath(mappingFilePath));
     this->_GetMappingPairsFromUsdFile(this->GetMappingFilePath());
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("MAPPING FILE PATH TEST ('%s')\n", this->GetMappingFilePath().c_str());
+
+    // EDIT
     this->_GetMappingPairsFromJsonFile(this->GetMappingFilePath());
-    this->GetMappingPair();
+    this->GetMappingPairTEST();
+    // EDIT
 }
 
 bool
@@ -221,8 +225,13 @@ void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std
     }
 }
 
-void FileResolverContext::GetMappingPair()
+void FileResolverContext::GetMappingPairTEST()
 {
+    if (data->mappingPairs.size() < 1)
+    {
+        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("MAPPING PAIR NOT FOUND\n");
+        return;
+    }
     for (std::pair<std::string, std::string> _pair : data->mappingPairs)
     {
         TF_DEBUG(FILERESOLVER_RESOLVER).Msg("\nResolverContext::_GetMappingPairsFromData ('%s')\n", _pair.first.c_str());
