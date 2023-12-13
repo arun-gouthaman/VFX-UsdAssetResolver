@@ -258,6 +258,8 @@ FileResolver::_CreateDefaultContextForAsset(
     struct FileResolverContextRecord record;
     record.timestamp = this->_GetModificationTimestamp(assetPath, resolvedPath);
     record.ctx = FileResolverContext(resolvedPath, std::vector<std::string>(1, assetDir));
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context assetDir\n", assetDir.c_str());
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_CreateDefaultContextForAsset('%s') - Constructing new context resolvedPath\n", resolvedPath.GetPathString().c_str());
     _sharedContexts.insert(std::pair<std::string, FileResolverContextRecord>(resolvedPath, record));
     return ArResolverContext(record.ctx);
 }
@@ -266,7 +268,7 @@ bool
 FileResolver::_IsContextDependentPath(
     const std::string& assetPath) const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath()\n");
+    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("Resolver::_IsContextDependentPath('%s')\n", assetPath.c_str());
     return _IsSearchPath(assetPath);
 }
 
