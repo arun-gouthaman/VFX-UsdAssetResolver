@@ -11,6 +11,7 @@
 #include "pxr/usd/ar/filesystemWritableAsset.h"
 #include "pxr/usd/ar/notice.h"
 
+
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -81,6 +82,9 @@ FileResolver::_CreateIdentifier(
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg("Resolver::_CreateIdentifier('%s', '%s')\n",
                                         assetPath.c_str(), anchorAssetPath.GetPathString().c_str());
 
+    // EDIT returning path passed it with no modifications
+    return assetPath;
+
     if (assetPath.empty()) {
         return assetPath;
     }
@@ -120,11 +124,50 @@ FileResolver::_CreateIdentifierForNewAsset(
     return TfNormPath(assetPath);
 }
 
+
+
 ArResolvedPath
 FileResolver::_Resolve(
     const std::string& assetPath) const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("!!!!! _RESOLVE !!!!! ('%s')\n", assetPath.c_str());
+    const FileResolverContext* contexts[2] = { this->_GetCurrentContextPtr(), &_fallbackContext };
+
+    for (const FileResolverContext* ctx : contexts)
+    {
+        if (!ctx)
+        {
+            continue;
+        }
+        std::map<std::string, std::string> mapping_pairs = ctx->GetMappingPairs();
+
+        std::map<std::string, std::string>::iterator mapped_pair_it = mapping_pairs.find(assetPath);
+
+
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve Checking for !!!!!\n('%s')\n\n", assetPath.c_str());
+        if (mapped_pair_it != mapping_pairs.end())
+        {
+            //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve get mapped pair !!!!!\n'(%s)' - '(%s)'\n\n", assetPath.c_str(), mapped_pair_it->second.c_str());
+            TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), mapped_pair_it->second.c_str());
+            return _ResolveAnchored(std::string(), mapped_pair_it->second);
+        }
+        else
+        {
+            TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve DEFAULT IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+            return _ResolveAnchored(std::string(), assetPath);
+        }
+    }
+    //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve returning default !!!!! '(%s)'\n\n", assetPath.c_str());
+    //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+    //return _ResolveAnchored(std::string(), assetPath);
+    return ArResolvedPath();
+}
+
+/*
+ArResolvedPath
+FileResolver::_Resolve(
+    const std::string& assetPath) const
+{
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _RESOLVE TEST !!!!! ('%s')\n", assetPath.c_str());
     if (assetPath.empty()) {
         return ArResolvedPath();
     }
@@ -194,12 +237,18 @@ FileResolver::_Resolve(
                         TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("PAIR ('%s') -> ('%s')\n", assetPath.c_str(), map_find->second);
                         return _ResolveAnchored(std::string(), map_find->second);
                     }
+                    else
+                    {
+                        TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("KEY NOT FOUND\n");
+                    }
                 }
             }
         }
     }
     return _ResolveAnchored(std::string(), assetPath);
 }
+
+*/
 
 ArResolvedPath
 FileResolver::_ResolveForNewAsset(
@@ -299,7 +348,7 @@ std::shared_ptr<ArAsset>
 FileResolver::_OpenAsset(
     const ArResolvedPath& resolvedPath) const
 {
-
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("\n!!!! OPEN ASSET !!!! ('%s')\n\n", resolvedPath.GetPathString().c_str());
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg(
         "Resolver::_OpenAsset('%s')\n",
         resolvedPath.GetPathString().c_str());

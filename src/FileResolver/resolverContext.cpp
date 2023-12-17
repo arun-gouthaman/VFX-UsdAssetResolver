@@ -52,7 +52,7 @@ FileResolverContext::FileResolverContext(const FileResolverContext& ctx) = defau
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 1\n");
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 1\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
@@ -63,7 +63,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath)
 
 FileResolverContext::FileResolverContext(const std::vector<std::string>& searchPaths)
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 2\n");
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 2\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext() - Creating new context with custom search paths\n");
     // Init
     this->_GetMappingPairsFromJsonFile(searchPaths[0]);
@@ -74,7 +74,7 @@ FileResolverContext::FileResolverContext(const std::vector<std::string>& searchP
 
 FileResolverContext::FileResolverContext(const std::string& mappingFilePath, const std::vector<std::string>& searchPaths)
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 3\n");
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST 3\n");
     TF_DEBUG(FILERESOLVER_RESOLVER_CONTEXT).Msg("ResolverContext::ResolverContext('%s') - Creating new context with custom search paths\n", mappingFilePath.c_str());
     // Init
     this->_LoadEnvMappingRegex();
@@ -86,7 +86,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
 
     // EDIT
     this->_GetMappingPairsFromJsonFile(this->GetMappingFilePath());
-    this->GetMappingPairTEST();
+    //this->GetMappingPairTEST();
     // EDIT
 }
 
@@ -181,14 +181,14 @@ bool FileResolverContext::_GetMappingPairsFromJsonFile(const std::string& filePa
         TfStringCatPaths(assetDir, "replace_json.json"));
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", filePath.c_str());
     TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", assetDir.c_str());
-    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", replaceJsonFilePath.c_str());
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("ResolverContext::_GetMappingPairsFromJsonFile ('%s')\n", replaceJsonFilePath.c_str());
 
     std::ifstream ifs(replaceJsonFilePath);
 
 
     if (ifs)
     {
-        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromJsonFile JSON FILE FOUND\n");
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("ResolverContext::_GetMappingPairsFromJsonFile JSON FILE FOUND\n");
         JsParseError error;
         const JsValue value = JsParseStream(ifs, &error);
         ifs.close();
@@ -200,8 +200,7 @@ bool FileResolverContext::_GetMappingPairsFromJsonFile(const std::string& filePa
                     if (pair.IsArray()) {
                         this->AddMappingPair(
                             pair.GetJsArray()[0].GetString(), pair.GetJsArray()[1].GetString());
-                        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("%s\n", pair.GetJsArray()[0].GetString().c_str());
-                        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("%s\n", pair.GetJsArray()[1].GetString().c_str());
+                        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("PAIR\n%s - %s\n\n", pair.GetJsArray()[0].GetString().c_str(), pair.GetJsArray()[1].GetString().c_str());
                     }
                 }
             }
@@ -225,17 +224,17 @@ void FileResolverContext::AddMappingPair(const std::string& sourceStr, const std
     }
 }
 
-void FileResolverContext::GetMappingPairTEST()
+void FileResolverContext::GetMappingPairTEST(std::map<std::string, std::string> mapping_pair)
 {
-    if (data->mappingPairs.size() < 1)
+    if (mapping_pair.empty())
     {
-        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("MAPPING PAIR NOT FOUND\n");
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("MAPPING PAIR NOT FOUND\n");
         return;
     }
-    for (std::pair<std::string, std::string> _pair : data->mappingPairs)
+    for (std::pair<std::string, std::string> _pair : mapping_pair)
     {
-        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("\nResolverContext::_GetMappingPairsFromData ('%s')\n", _pair.first.c_str());
-        TF_DEBUG(FILERESOLVER_RESOLVER).Msg("ResolverContext::_GetMappingPairsFromData ('%s')\n\n", _pair.second.c_str());
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("\nResolverContext::_GetMappingPairsFromData ('%s')\n", _pair.first.c_str());
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("ResolverContext::_GetMappingPairsFromData ('%s')\n\n", _pair.second.c_str());
     }
 }
 
