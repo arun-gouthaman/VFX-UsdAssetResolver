@@ -86,7 +86,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
 
     // EDIT
     this->_GetMappingPairsFromJsonFile(this->GetMappingFilePath());
-    //this->GetMappingPairTEST();
+    this->GetMappingPairTEST(data->mappingPairs);
     // EDIT
 }
 

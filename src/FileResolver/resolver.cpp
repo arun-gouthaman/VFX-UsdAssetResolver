@@ -130,6 +130,7 @@ ArResolvedPath
 FileResolver::_Resolve(
     const std::string& assetPath) const
 {
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve !!!!!\n\n");
     const FileResolverContext* contexts[2] = { this->_GetCurrentContextPtr(), &_fallbackContext };
 
     for (const FileResolverContext* ctx : contexts)
@@ -254,8 +255,40 @@ ArResolvedPath
 FileResolver::_ResolveForNewAsset(
     const std::string& assetPath) const
 {
-    TF_DEBUG(FILERESOLVER_RESOLVER).Msg("Resolver::_ResolveForNewAsset('%s')\n", assetPath.c_str());
-    return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset !!!!!\n\n");
+    const FileResolverContext* contexts[2] = { this->_GetCurrentContextPtr(), &_fallbackContext };
+
+    for (const FileResolverContext* ctx : contexts)
+    {
+        if (!ctx)
+        {
+            continue;
+        }
+        std::map<std::string, std::string> mapping_pairs = ctx->GetMappingPairs();
+
+        std::map<std::string, std::string>::iterator mapped_pair_it = mapping_pairs.find(assetPath);
+
+
+
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset Checking for !!!!!\n('%s')\n\n", assetPath.c_str());
+        if (mapped_pair_it != mapping_pairs.end())
+        {
+            //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve get mapped pair !!!!!\n'(%s)' - '(%s)'\n\n", assetPath.c_str(), mapped_pair_it->second.c_str());
+            TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), mapped_pair_it->second.c_str());
+            return _ResolveAnchored(std::string(), mapped_pair_it->second);
+        }
+        else
+        {
+            TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset DEFAULT IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+            return _ResolveAnchored(std::string(), assetPath);
+        }
+    }
+    //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve returning default !!!!! '(%s)'\n\n", assetPath.c_str());
+    //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+    //return _ResolveAnchored(std::string(), assetPath);
+    return ArResolvedPath();
+    //TF_DEBUG(FILERESOLVER_RESOLVER).Msg("Resolver::_ResolveForNewAsset('%s')\n", assetPath.c_str());
+    //return ArResolvedPath(assetPath.empty() ? assetPath : TfAbsPath(assetPath));
 }
 
 ArResolverContext
