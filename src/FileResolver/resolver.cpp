@@ -154,6 +154,19 @@ FileResolver::_Resolve(
         else
         {
             TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve DEFAULT IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+            pxr::ArResolvedPath res_path = _ResolveAnchored(std::string(), assetPath);
+            for (std::string search_path : ctx->GetSearchPaths())
+            {
+                if (search_path.empty())
+                {
+                    continue;
+                }
+                ArResolvedPath resolvedPath = _ResolveAnchored(search_path, assetPath);
+                if (!resolvedPath.empty())
+                {
+                    return resolvedPath;
+                }
+            }
             return _ResolveAnchored(std::string(), assetPath);
         }
     }
