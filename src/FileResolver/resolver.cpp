@@ -130,8 +130,9 @@ ArResolvedPath
 FileResolver::_Resolve(
     const std::string& assetPath) const
 {
-    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve !!!!!\n\n");
     const FileResolverContext* contexts[2] = { this->_GetCurrentContextPtr(), &_fallbackContext };
+
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve !!!!!\n\n");
 
     for (const FileResolverContext* ctx : contexts)
     {
@@ -157,6 +158,7 @@ FileResolver::_Resolve(
             pxr::ArResolvedPath res_path = _ResolveAnchored(std::string(), assetPath);
             for (std::string search_path : ctx->GetSearchPaths())
             {
+
                 if (search_path.empty())
                 {
                     continue;
@@ -167,13 +169,14 @@ FileResolver::_Resolve(
                     return resolvedPath;
                 }
             }
-            return _ResolveAnchored(std::string(), assetPath);
+            //return _ResolveAnchored(std::string(), assetPath);
+            //return ArResolvedPath();
         }
     }
     //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve returning default !!!!! '(%s)'\n\n", assetPath.c_str());
     //TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
     //return _ResolveAnchored(std::string(), assetPath);
-    return ArResolvedPath();
+    return _ResolveAnchored(std::string(), assetPath);
 }
 
 /*
@@ -293,6 +296,22 @@ FileResolver::_ResolveForNewAsset(
         else
         {
             TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset DEFAULT IP-OP !!!!! ('%s') - ('%s')\n\n\n", assetPath.c_str(), assetPath.c_str());
+            pxr::ArResolvedPath res_path = _ResolveAnchored(std::string(), assetPath);
+            TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset Search Path!!!!! \n");
+            for (std::string search_path : ctx->GetSearchPaths())
+            {
+                TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("Path - > %s\n\n", search_path.c_str());
+                if (search_path.empty())
+                {
+                    continue;
+                }
+                TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("!!!!! _Resolve for new asset Search Path !!!!! ('%s')\n", search_path.c_str());
+                ArResolvedPath resolvedPath = _ResolveAnchored(search_path, assetPath);
+                if (!resolvedPath.empty())
+                {
+                    return resolvedPath;
+                }
+            }
             return _ResolveAnchored(std::string(), assetPath);
         }
     }

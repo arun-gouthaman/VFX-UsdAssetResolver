@@ -1,10 +1,14 @@
 #ifndef AR_FILERESOLVER_RESOLVER_CONTEXT_H
 #define AR_FILERESOLVER_RESOLVER_CONTEXT_H
 
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+
 #include <memory>
 #include <regex>
 #include <string>
 #include <map>
+#include <filesystem>
+#include <unordered_set>
 
 #include "pxr/pxr.h"
 #include "pxr/usd/ar/defineResolverContext.h"
@@ -110,6 +114,7 @@ private:
     bool _GetMappingPairsFromUsdFile(const std::string& filePath);
     bool _GetMappingPairsFromJsonFile(const std::string& filePath);
     void GetMappingPairTEST(std::map<std::string, std::string> mapping_pair);
+    std::unordered_set<std::string> GetSubDirectories(const std::string& basePath);
 };
 
 PXR_NAMESPACE_OPEN_SCOPE

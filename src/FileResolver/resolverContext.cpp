@@ -1,3 +1,4 @@
+#include "resolverContext.h"
 #define CONVERT_STRING(string) #string
 #define DEFINE_STRING(string) CONVERT_STRING(string)
 
@@ -14,6 +15,8 @@
 #include <vector>
 
 #include <fstream>
+
+#include <experimental/filesystem>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -86,7 +89,7 @@ FileResolverContext::FileResolverContext(const std::string& mappingFilePath, con
 
     // EDIT
     this->_GetMappingPairsFromJsonFile(this->GetMappingFilePath());
-    this->GetMappingPairTEST(data->mappingPairs);
+    //this->GetMappingPairTEST(data->mappingPairs);
     // EDIT
 }
 
@@ -238,6 +241,26 @@ void FileResolverContext::GetMappingPairTEST(std::map<std::string, std::string> 
     }
 }
 
+std::unordered_set<std::string> FileResolverContext::GetSubDirectories(const std::string& basePath)
+{
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("GETTING SUB DIRS\n");
+
+    std::experimental::filesystem::recursive_directory_iterator it(basePath), end_it;
+    std::unordered_set<std::string> dir_set;
+
+    while (it != end_it)
+    {
+        std::string this_file = it->path().string();
+        if (std::experimental::filesystem::is_regular_file(this_file))
+        {
+            std::string parent_path = std::experimental::filesystem::path(this_file).parent_path().string();
+            dir_set.insert(parent_path);
+        }
+        ++it;
+    }
+    return dir_set;
+}
+
 void FileResolverContext::RemoveMappingByKey(const std::string& sourceStr){
     const auto &it = data->mappingPairs.find(sourceStr);
     if (it != data->mappingPairs.end()){
@@ -271,9 +294,19 @@ void FileResolverContext::RefreshSearchPaths(){
 }
 
 void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& searchPaths){
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("\n\nSEARCH PATHS\n");
+
+    for (std::string searchPath : searchPaths)
+    {
+        TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("SEARCH PATH -> %s\n", searchPath.c_str());
+    }
+    TF_DEBUG(FILERESOLVER_TEST_DEBUG).Msg("\n\n");
     data->customSearchPaths.clear();
     if (!searchPaths.empty()) {
         for (const std::string& searchPath : searchPaths) {
+
+            std::unordered_set<std::string> dirs =GetSubDirectories(searchPath);
+            
             if (searchPath.empty()) { continue; }
             const std::string absSearchPath = TfAbsPath(searchPath);
             if (absSearchPath.empty()) {
@@ -283,6 +316,14 @@ void FileResolverContext::SetCustomSearchPaths(const std::vector<std::string>& s
                 continue;
             }
             data->customSearchPaths.push_back(absSearchPath);
+
+            if (!dirs.empty())
+            {
+                for (std::string dir : dirs)
+                {
+                    data->customSearchPaths.push_back(dir);
+                }
+            }
         }
     }
 }
